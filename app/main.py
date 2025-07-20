@@ -31,7 +31,7 @@ app.add_middleware(
 )
 
 # Incluir routers
-app.include_router(users.router)
+app.include_router(users.router, prefix="/asistencias", tags=["asistencias"])
 
 
 async def poblar_datos_iniciales():

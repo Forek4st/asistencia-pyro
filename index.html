@@ -249,7 +249,7 @@
 
     <script>
               // Configuración
-        const API_BASE = 'https://asistencia-pyro-hka6f0bhm-forek4sts-projects.vercel.app';
+        const API_BASE = '';  // Usar rutas relativas para desarrollo local y deployment
 
       const personas = [
         "JOCELYN GARCIA BAUTISTA",
@@ -353,7 +353,7 @@
       }
 
       async function actualizarAsistencia(nombre, dia, asistio) {
-        const response = await fetch(`${API_BASE}/`, {
+        const response = await fetch(`/api/asistencias/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -416,7 +416,7 @@
 
         try {
           // Obtener todas las asistencias desde el endpoint general
-          const response = await fetch(`${API_BASE}/`);
+          const response = await fetch(`/api/asistencias/`);
           const data = await response.json();
 
           // Limpiar todos los checkboxes primero
