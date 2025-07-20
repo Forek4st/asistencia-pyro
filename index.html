@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Asistencia</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .controls {
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        margin: 5px;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .attendance-grid {
+        overflow-x: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .grid-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+        background: white;
+      }
+
+      .grid-table th {
+        background: purple;
+        color: white;
+        padding: 15px 10px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .grid-table td {
+        padding: 12px 10px;
+        text-align: center;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+      }
+
+      .grid-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+
+      .grid-table tr:hover {
+        background-color: #e3f2fd;
+      }
+
+      .nombre-cell {
+        text-align: left !important;
+        font-weight: 600;
+        color: #333;
+        max-width: 250px;
+        padding-left: 15px;
+      }
+
+      .checkbox-cell {
+        width: 80px;
+      }
+
+      .checkbox-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .checkbox-wrapper input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+
+      .checkbox-wrapper input[type="checkbox"]:checked {
+        accent-color: #4facfe;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4facfe;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .message {
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      .message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          margin: 10px;
+          border-radius: 10px;
+        }
+
+        .content {
+          padding: 20px;
+        }
+
+        .grid-table th,
+        .grid-table td {
+          padding: 8px 5px;
+          font-size: 0.8rem;
+        }
+
+        .nombre-cell {
+          max-width: 150px;
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Sistema de Asistencia</h1>
+      </div>
+
+      <div class="content">
+        <div class="controls">
+          <button class="btn" onclick="limpiarTodo()">🗑️ Limpiar Todo</button>
+        </div>
+
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Cargando...</p>
+        </div>
+
+        <div id="mensaje"></div>
+
+        <div class="attendance-grid">
+          <table class="grid-table">
+            <thead>
+              <tr>
+                <th class="nombre-cell">👤 Nombre</th>
+                <th class="checkbox-cell">Domingo</th>
+                <th class="checkbox-cell">Lunes</th>
+                <th class="checkbox-cell">Martes</th>
+                <th class="checkbox-cell">Miércoles</th>
+                <th class="checkbox-cell">Jueves</th>
+                <th class="checkbox-cell">Viernes</th>
+                <th class="checkbox-cell">Sábado</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceBody">
+              <!-- Las filas se generarán dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+              // Configuración
+        const API_BASE = 'https://asistencia-pyro-m54taobbd-forek4sts-projects.vercel.app';
+
+      const personas = [
+        "JOCELYN GARCIA BAUTISTA",
+        "FELICITAS BAUTISTA",
+        "XOCHITL ALEJANDRA REYES MARTINEZ",
+        "ISABEL IRASEMA AVILÉS TORRES",
+        "GABRIELA LOPEZ CARDEL",
+        "DIANA LAURA REYES GONZALES",
+        "MARTHA PATRICIA ARRIAGA MARTINEZ",
+        "YOLANDA SEVERINO LORENZO",
+        "ARLETH HERNANDEZ GONZALEZ",
+        "MARIA DEL ROSARIO ROMERO PEREZ",
+        "JEESNIA ADALAY CRUZ UC",
+        "ROSA CHALCHI JIMENEZ",
+        "VERONICA CUENCA GONZALEZ",
+        "ALEJANDRA LAURA MEDINA BARRON",
+        "ELOISA ELENE RODRIGUEZ HERNANDEZ",
+        "RUBEN RAMOS HERNANDEZ",
+        "SANDRA RIVERA NAJERA",
+        "ALONDRA TRINIDAD PEREZ",
+        "JUAN MANUEL GONZALEZ SANTOS",
+        "IVONNE FRIAS DE LA BARCA",
+        "PATRICIA GOMEZ HERNANDEZ",
+        "MARTHA PATRICIA ARAGON GUERRERO",
+        "URIEL LUNA GOMEZ",
+        "NORMA ELIZABETH VARELA RUBIO",
+        "PEDRO MENDEZ LUGO",
+      ];
+
+      const dias = [
+        "domingo",
+        "lunes",
+        "martes",
+        "miercoles",
+        "jueves",
+        "viernes",
+        "sabado",
+      ];
+
+      function mostrarLoading(show) {
+        document.getElementById("loading").style.display = show
+          ? "block"
+          : "none";
+      }
+
+      function mostrarMensaje(texto, tipo = "success") {
+        const mensajeDiv = document.getElementById("mensaje");
+        mensajeDiv.innerHTML = `<div class="message ${tipo}">${texto}</div>`;
+        setTimeout(() => {
+          mensajeDiv.innerHTML = "";
+        }, 3000);
+      }
+
+      function inicializarGrilla() {
+        const tbody = document.getElementById("attendanceBody");
+        tbody.innerHTML = "";
+
+        personas.forEach((persona) => {
+          const fila = document.createElement("tr");
+
+          // Celda del nombre
+          const celdaNombre = document.createElement("td");
+          celdaNombre.className = "nombre-cell";
+          celdaNombre.textContent = persona;
+          fila.appendChild(celdaNombre);
+
+          // Celdas de checkboxes para cada día
+          dias.forEach((dia) => {
+            const celdaCheckbox = document.createElement("td");
+            celdaCheckbox.className = "checkbox-cell";
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "checkbox-wrapper";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = `${persona.replace(/\s+/g, "_")}_${dia}`;
+            checkbox.onchange = () => manejarCheckbox(persona, dia, checkbox);
+
+            wrapper.appendChild(checkbox);
+            celdaCheckbox.appendChild(wrapper);
+            fila.appendChild(celdaCheckbox);
+          });
+
+          tbody.appendChild(fila);
+        });
+      }
+
+      async function manejarCheckbox(nombre, dia, checkbox) {
+        mostrarLoading(true);
+
+        try {
+          await actualizarAsistencia(nombre, dia, checkbox.checked);
+        } catch (error) {
+          mostrarMensaje("Error al actualizar la asistencia", "error");
+          checkbox.checked = !checkbox.checked;
+          console.error("Error:", error);
+        } finally {
+          mostrarLoading(false);
+        }
+      }
+
+      async function actualizarAsistencia(nombre, dia, asistio) {
+        const response = await fetch(`${API_BASE}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre: nombre,
+            dia: dia,
+            asistio: asistio,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error en la respuesta del servidor");
+        }
+
+        const data = await response.json();
+        return data;
+      }
+
+      async function limpiarTodo() {
+        if (
+          confirm("¿Estás seguro de que quieres limpiar todas las asistencias?")
+        ) {
+          mostrarLoading(true);
+
+          try {
+            for (const persona of personas) {
+              for (const dia of dias) {
+                await actualizarAsistencia(persona, dia, false);
+              }
+            }
+
+            // Actualizar la interfaz
+            personas.forEach((persona) => {
+              dias.forEach((dia) => {
+                const checkbox = document.getElementById(
+                  `${persona.replace(/\s+/g, "_")}_${dia}`
+                );
+                if (checkbox) {
+                  checkbox.checked = false;
+                }
+              });
+            });
+
+            mostrarMensaje(
+              "Todas las asistencias han sido limpiadas",
+              "success"
+            );
+          } catch (error) {
+            mostrarMensaje("Error al limpiar las asistencias", "error");
+            console.error("Error:", error);
+          } finally {
+            mostrarLoading(false);
+          }
+        }
+      }
+
+      async function cargarTodasLasAsistencias() {
+        mostrarLoading(true);
+
+        try {
+          // Obtener todas las asistencias desde el endpoint general
+          const response = await fetch(`${API_BASE}/`);
+          const data = await response.json();
+
+          // Limpiar todos los checkboxes primero
+          personas.forEach((persona) => {
+            dias.forEach((dia) => {
+              const checkbox = document.getElementById(
+                `${persona.replace(/\s+/g, "_")}_${dia}`
+              );
+              if (checkbox) {
+                checkbox.checked = false;
+              }
+            });
+          });
+
+          // Cargar datos de las personas que tienen registros
+          if (data.asistencias && data.asistencias.length > 0) {
+            data.asistencias.forEach((personaData) => {
+              dias.forEach((dia) => {
+                const checkbox = document.getElementById(
+                  `${personaData.nombre.replace(/\s+/g, "_")}_${dia}`
+                );
+                if (checkbox && personaData[dia] === true) {
+                  checkbox.checked = true;
+                }
+              });
+            });
+          }
+
+          mostrarMensaje("Asistencias cargadas correctamente", "success");
+        } catch (error) {
+          mostrarMensaje("Error al cargar las asistencias", "error");
+          console.error("Error:", error);
+        } finally {
+          mostrarLoading(false);
+        }
+      }
+
+      // Inicializar la aplicación
+      document.addEventListener("DOMContentLoaded", function () {
+        inicializarGrilla();
+        cargarTodasLasAsistencias();
+      });
+    </script>
+  </body>
+</html>
