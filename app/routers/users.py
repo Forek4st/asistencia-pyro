@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from tortoise.exceptions import DoesNotExist
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse, AsistenciaRequest
+from app.schemas.user import AsistenciaRequest
 
 router = APIRouter()
 
@@ -47,39 +47,3 @@ async def manejar_asistencia(request: AsistenciaRequest):
     return {
         "mensaje": f"Asistencia de {request.nombre.title()} {'registrada' if request.asistio else 'removida'} el día {request.dia.title()}"
     }
-
-
-@router.post("/users/", response_model=UserResponse)
-async def create_user(user: UserCreate):
-    user_obj = await User.create(**user.dict())
-    return user_obj
-
-
-@router.get("/users/{user_id}", response_model=UserResponse)
-async def read_user(user_id: int):
-    try:
-        user = await User.get(id=user_id)
-        return user
-    except DoesNotExist:
-        raise HTTPException(status_code=404, detail="User not found")
-
-
-@router.put("/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: int, user: UserCreate):
-    try:
-        user_obj = await User.get(id=user_id)
-        user_obj.update_from_dict(user.dict())
-        await user_obj.save()
-        return user_obj
-    except DoesNotExist:
-        raise HTTPException(status_code=404, detail="User not found")
-
-
-@router.delete("/users/{user_id}")
-async def delete_user(user_id: int):
-    try:
-        user = await User.get(id=user_id)
-        await user.delete()
-        return {"detail": "User deleted"}
-    except DoesNotExist:
-        raise HTTPException(status_code=404, detail="User not found")
