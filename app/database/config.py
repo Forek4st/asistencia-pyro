@@ -14,7 +14,7 @@ if not DATABASE_URL:
 
 print("✅ Database connection configured from environment variables")
 
-# Configuración SSL para Neon
+# Configuración SSL para Render PostgreSQL
 ssl_context = ssl.create_default_context()
 ssl_context.check_hostname = False
 ssl_context.verify_mode = ssl.CERT_NONE
@@ -24,11 +24,11 @@ TORTOISE_ORM = {
         "default": {
             "engine": "tortoise.backends.asyncpg",
             "credentials": {
-                "host": "ep-dry-river-adrlqu8w-pooler.c-2.us-east-1.aws.neon.tech",
+                "host": "dpg-d1v8kl24d50c73db3bi0-a.oregon-postgres.render.com",
                 "port": "5432",
-                "user": "neondb_owner",
-                "password": "npg_8cxAUyw6kSHd",
-                "database": "neondb",
+                "user": "asistencia_pyro_user",
+                "password": "6YCChGE3nmSv6WUBP3Qob7ETOF8oVOgy",
+                "database": "asistencia_pyro",
                 "ssl": ssl_context,
             }
         }

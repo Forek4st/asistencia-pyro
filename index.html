@@ -353,7 +353,7 @@
       }
 
       async function actualizarAsistencia(nombre, dia, asistio) {
-        const response = await fetch(`/api/asistencias/`, {
+        const response = await fetch(`/asistencias/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -416,7 +416,7 @@
 
         try {
           // Obtener todas las asistencias desde el endpoint general
-          const response = await fetch(`/api/asistencias/`);
+          const response = await fetch(`/asistencias/`);
           const data = await response.json();
 
           // Limpiar todos los checkboxes primero

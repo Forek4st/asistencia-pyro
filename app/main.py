@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
+import os
 from app.database.config import init_db, close_db
 from app.routers import users
 
@@ -32,6 +35,14 @@ app.add_middleware(
 
 # Incluir routers
 app.include_router(users.router, prefix="/asistencias", tags=["asistencias"])
+
+# Servir archivos estáticos
+app.mount("/static", StaticFiles(directory="."), name="static")
+
+# Ruta para servir index.html
+@app.get("/")
+async def serve_index():
+    return FileResponse("index.html")
 
 
 async def poblar_datos_iniciales():
