@@ -1,4 +1,5 @@
 import os
+import ssl
 from dotenv import load_dotenv
 from tortoise import Tortoise
 
@@ -13,11 +14,28 @@ if not DATABASE_URL:
 
 print("✅ Database connection configured from environment variables")
 
+# Configuración SSL para Neon
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
+
 TORTOISE_ORM = {
-    "connections": {"default": DATABASE_URL},
+    "connections": {
+        "default": {
+            "engine": "tortoise.backends.asyncpg",
+            "credentials": {
+                "host": "ep-dry-river-adrlqu8w-pooler.c-2.us-east-1.aws.neon.tech",
+                "port": "5432",
+                "user": "neondb_owner",
+                "password": "npg_8cxAUyw6kSHd",
+                "database": "neondb",
+                "ssl": ssl_context,
+            }
+        }
+    },
     "apps": {
         "models": {
-            "models": ["app.models.user", "aerich.models"],
+            "models": ["app.models.user"],
             "default_connection": "default",
         },
     },
